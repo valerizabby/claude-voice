@@ -5,6 +5,7 @@ WAKE_WORDS = ("claude", "клод", "клауд", "клоуд", "клаут")
 STOP_WORDS = ("стоп", "стой", "хватит", "отмена")
 YES_WORDS = ("да", "отправляй", "отправь", "пушь", "подтверждаю")
 WAKE_FOLLOWUP_SEC = 8
+FOLLOWUP_SEC = 10  # right after an answer is spoken, a phrase needs no wake word
 # lower-case substrings of typical Whisper hallucinations on silence
 HALLUCINATIONS = (
     "продолжение следует",

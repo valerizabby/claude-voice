@@ -22,7 +22,9 @@ def split_wake(text: str) -> str | None:
     return " ".join(words[1:])
 
 
-def collect_commands(utts: list[tuple[float, str]]) -> list[tuple[str, str]]:
+def collect_commands(utts: list[tuple[float, str]],
+                     followup: tuple[float, float] | None = None) -> list[tuple[str, str]]:
+    """followup=(start, end): a phrase that ended inside it counts without the wake word."""
     utts = sorted(utts, key=lambda u: u[0])
     out: list[tuple[str, str]] = []
     i = 0
@@ -33,7 +35,9 @@ def collect_commands(utts: list[tuple[float, str]]) -> list[tuple[str, str]]:
             continue
         rest = split_wake(text)
         if rest is None:
-            continue
+            if not (followup and followup[0] <= ts <= followup[1]):
+                continue
+            rest = normalize(text)
         if rest == "" and i < len(utts):
             nts, ntext = utts[i]
             # a follow-up with its own wake word is handled by the next iteration

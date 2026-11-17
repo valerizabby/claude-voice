@@ -6,7 +6,7 @@ import fcntl, json, os, re, shlex, subprocess, time, traceback
 from pathlib import Path
 
 from . import state
-from .config import CONFIRM_MAX_CHARS, WAKE_FOLLOWUP_SEC
+from .config import CONFIRM_MAX_CHARS, FOLLOWUP_SEC, WAKE_FOLLOWUP_SEC
 from .policy import classify
 from .speech import VOICE_INSTRUCTION, confirm_phrase, extract_speak, speak, speak_part
 from .wake import collect_commands, is_hallucination, parse_yes, split_wake, yes_words
@@ -132,6 +132,7 @@ def on_stop(inp, wait_sec=7140, poll=0.3):
         speak(speak_part(inp["last_assistant_message"]))
     else:
         speak(extract_speak(inp["transcript_path"]))
+    followup = (time.time(), time.time() + FOLLOWUP_SEC)  # starts once the answer has been said
     while time.time() < deadline:
         if not state.is_on(sid):  # /voice-off, or another session took voice mode
             return {}
@@ -144,7 +145,7 @@ def on_stop(inp, wait_sec=7140, poll=0.3):
         rows = state.read_utterances(sid, state.get_cursor(sid))
         if rows:
             end = _cursor_end(rows)
-            cmds = collect_commands([(ts, t) for _, ts, t in rows])
+            cmds = collect_commands([(ts, t) for _, ts, t in rows], followup)
             stops = [i for i, (kind, _) in enumerate(cmds) if kind == "stop"]
             if stops:
                 cmds = cmds[stops[-1] + 1:]  # a stop cancels everything said before it

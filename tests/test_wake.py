@@ -31,6 +31,16 @@ class Collect(unittest.TestCase):
         self.assertEqual(c([(0, "Клод"), (2, "стоп")]), [("stop", "")])
         self.assertEqual(c([(3, "Клод, б"), (0, "Клод, а")]), [("command", "а"), ("command", "б")])
 
+    def test_followup_window(self):  # right after an answer the wake word is optional
+        c, w = collect_commands, (100.0, 110.0)
+        self.assertEqual(c([(105, "Почему биткоин падает?")], w), [("command", "почему биткоин падает")])
+        self.assertEqual(c([(105, "стоп")], w), [("stop", "")])
+        self.assertEqual(c([(105, "Клод, а")], w), [("command", "а")])
+        self.assertEqual(c([(99, "сказано до ответа")], w), [])
+        self.assertEqual(c([(111, "поздно")], w), [])
+        self.assertEqual(c([(105, "Смотрите продолжение в следующей серии.")], w), [])
+        self.assertEqual(c([(105, "без окна")]), [])
+
 
 class Yes(unittest.TestCase):
     def test_yes(self):

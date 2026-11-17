@@ -115,6 +115,19 @@ class HooksTest(unittest.TestCase):
         on_stop({"session_id": "s", "transcript_path": FIX, "last_assistant_message": ""}, wait_sec=2, poll=0.05)
         self.assertEqual(self.spoken(), [])  # FIX holds an older answer: it must not be read aloud
 
+    def test_followup_without_wake_word(self):
+        turn_on("s")
+        append_utterance("s", time.time() - 1, "разговор до ответа")
+        threading.Timer(0.3, lambda: append_utterance("s", time.time(), "Почему биткоин падает?")).start()
+        out = on_stop({"session_id": "s", "transcript_path": FIX}, wait_sec=4, poll=0.05)
+        self.assertEqual(out.get("reason"), "Голосовая команда пользователя: почему биткоин падает")
+
+    def test_no_followup_after_window(self):
+        turn_on("s")
+        with patch.object(hooks, "FOLLOWUP_SEC", 0.1):
+            threading.Timer(0.4, lambda: append_utterance("s", time.time(), "разговор в комнате")).start()
+            self.assertEqual(on_stop({"session_id": "s", "transcript_path": FIX}, wait_sec=2.5, poll=0.05), {})
+
     def test_stop_then_bare_wake_then_followup(self):
         turn_on("s")
         append_utterance("s", time.time() - 3, "Клод, стоп.")

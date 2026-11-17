@@ -32,7 +32,8 @@ contains no code from them.
  Claude Code session                                                ▼
  ├─ UserPromptSubmit  /voice-on, /voice-off: start or stop the listener for this session
  ├─ Stop              read the <speak> part of the answer aloud, then wait for a command
- │                    that starts with the wake word; return it as "decision: block"
+ │                    that starts with the wake word (none needed in the first 10 s);
+ │                    return it as "decision: block"
  │                    so Claude continues with it as the user's message
  ├─ PreToolUse        safe action → allow; anything else → ask aloud and wait for «Клод, да»
  ├─ Notification      a permission dialog appeared → «Нужно разрешение. Подойди к экрану.»
@@ -113,6 +114,7 @@ contains no code from them.
 | `/voice-off` | Turns it off and stops the listener. |
 | «Клод, <command>» ("Claude, …") | Runs the command. Wake words: `Claude`, `Клод`, `Клауд`, `Клоуд`, `Клаут`. The phrase must start with one of them. |
 | «Клод.» then the command | A bare wake word waits up to 8 s for the next phrase. |
+| A follow-up right after the answer | For 10 s after Claude finishes speaking, a phrase needs no wake word: «Почему он падает?» works. Any speech in the room during those 10 s counts as a command too. |
 | «Клод, стоп» ("Claude, stop") | Also `стой`, `хватит`, `отмена`. Cancels commands said before it and refuses every tool call until the turn ends. Commands said after it still run. |
 | «Клод, да» ("Claude, yes") | Confirms the action that was just read aloud. Also `отправляй`, `отправь`, `пушь`, `подтверждаю` after the wake word. A bare «Клод.» followed by «да» within 8 s works too. You have 30 s. A plain «да» without the wake word does not confirm: the action is refused and you hear «Чтобы подтвердить, скажи: Клод, да.» ("To confirm, say: Claude, yes."). |
 
@@ -182,6 +184,9 @@ sending messages, and unknown tools.
 - **The yes must carry the wake word.** «Клод, да», or «Клод.» and then «да». A plain «да» is
   refused. The listener cannot tell voices apart: anyone in the room, or a TV, who says «Клод, да»
   within the 30 s window confirms the action.
+- **The 10 s follow-up window takes any voice.** Right after an answer, a phrase without the
+  wake word runs as a command, whoever says it. Safe actions run; anything else still needs
+  «Клод, да».
 - **«Клод, стоп» is sticky.** It refuses every tool call until the turn ends, including calls
   that are waiting for their question.
 - **A hook error, an unclear answer or no answer means deny.** The hook's own budget is 75 s and
