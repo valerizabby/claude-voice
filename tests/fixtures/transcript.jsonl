@@ -1,0 +1,4 @@
+{"type": "user", "message": {"role": "user", "content": "привет"}}
+{"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "Готово.\n```go\nx\n```\n<speak>Тесты зелёные.</speak>"}]}}
+{"type": "assistant", "message": {"role": "assistant", "content": [{"type": "tool_use", "name": "Bash", "input": {}}]}}
+not json

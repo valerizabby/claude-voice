@@ -1,0 +1,22 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {"hooks": [{"type": "command", "command": "PYTHONUTF8=1 python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/run.py\" prompt", "timeout": 60}]}
+    ],
+    "Stop": [
+      {"hooks": [{"type": "command", "command": "PYTHONUTF8=1 python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/run.py\" stop", "timeout": 7200}]}
+    ],
+    "PreToolUse": [
+      {"matcher": "*", "hooks": [{"type": "command", "command": "PYTHONUTF8=1 python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/run.py\" pre_tool_use || { [ -e \"${VOICE_MODE_HOME:-$HOME/.claude-voice-mode}/active\" ] && exit 2; exit 0; }", "timeout": 90}]}
+    ],
+    "Notification": [
+      {"hooks": [{"type": "command", "command": "PYTHONUTF8=1 python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/run.py\" notification", "timeout": 60}]}
+    ],
+    "SessionStart": [
+      {"matcher": "compact|resume", "hooks": [{"type": "command", "command": "PYTHONUTF8=1 python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/run.py\" session_start", "timeout": 30}]}
+    ],
+    "SessionEnd": [
+      {"hooks": [{"type": "command", "command": "PYTHONUTF8=1 python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/run.py\" session_end", "timeout": 10}]}
+    ]
+  }
+}

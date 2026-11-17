@@ -1,0 +1,16 @@
+{
+  "name": "claude-voice-mode",
+  "owner": {"name": "Valeriia Zaborovskaia", "url": "https://github.com/valerizabby"},
+  "plugins": [
+    {
+      "name": "voice-mode",
+      "source": "./",
+      "description": "Hands-free voice mode for Claude Code on macOS: local wake-word speech recognition, spoken answers, voice confirmation for risky actions",
+      "author": {"name": "Valeriia Zaborovskaia", "url": "https://github.com/valerizabby"},
+      "homepage": "https://github.com/valerizabby/claude-voice",
+      "repository": "https://github.com/valerizabby/claude-voice",
+      "license": "MIT",
+      "keywords": ["voice", "speech", "wake-word", "whisper", "tts", "macos", "hands-free", "hooks"]
+    }
+  ]
+}
