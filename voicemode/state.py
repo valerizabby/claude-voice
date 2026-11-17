@@ -43,6 +43,8 @@ def active_session():
 
 def turn_on(sid):
     prev = active_session()
+    if prev and not (home() / prev / "on").exists():
+        prev = None  # a stale `active` (crash, manual run): nothing to take over, nothing to announce
     set_cursor(sid, queue_len(sid))  # earlier utterances must not run as commands
     clear_stopped(sid)
     (_dir(sid) / "on").touch()

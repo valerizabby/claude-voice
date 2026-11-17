@@ -14,6 +14,10 @@ class StateTest(unittest.TestCase):
         self.assertEqual(turn_on("b"), "a"); self.assertFalse(is_on("a")); self.assertTrue(is_on("b"))
         turn_off("b"); self.assertFalse(is_on("b")); self.assertIsNone(active_session())
 
+    def test_stale_active_is_not_a_previous_session(self):
+        turn_on("a"); (home() / "a" / "on").unlink()  # `active` left behind, "a" is no longer on
+        self.assertIsNone(turn_on("b"))
+
     def test_turn_off_other_keeps_active(self):
         turn_on("a"); turn_on("b"); turn_off("a")
         self.assertEqual(active_session(), "b")
