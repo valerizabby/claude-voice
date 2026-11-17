@@ -1,9 +1,13 @@
 import unittest
 
-from voicemode.wake import collect_commands, parse_yes, split_wake
+from voicemode.wake import collect_commands, is_hallucination, parse_yes, split_wake
 
 
 class SplitWake(unittest.TestCase):
+    def test_hallucination(self):  # Whisper's stock phrases on silence or noise
+        self.assertTrue(is_hallucination("Смотрите продолжение в следующей серии."))
+        self.assertFalse(is_hallucination("Клод, почему биткоин падает?"))
+
     def test_split(self):
         self.assertEqual(split_wake("Клод, запусти тесты."), "запусти тесты")
         self.assertEqual(split_wake("Claude запусти тесты"), "запусти тесты")
