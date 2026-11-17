@@ -71,6 +71,10 @@ class StateTest(unittest.TestCase):
         p = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)", "listen.py", "--session", "a"])
         self.addCleanup(p.kill)
         turn_on("a"); save_listener_pid("a", p.pid)
+        for _ in range(60):  # right after Popen, ps may still show the parent's command (before exec)
+            if listener_running("a"):
+                break
+            time.sleep(0.05)
         self.assertEqual(listener_running("a"), p.pid)
         turn_off("a")
         self.assertEqual(p.wait(timeout=3), -15)

@@ -187,7 +187,7 @@ class HooksTest(unittest.TestCase):
         threading.Timer(0.2, lambda: turn_on("b")).start()
         t0 = time.time()
         self.assertEqual(on_stop({"session_id": "a", "transcript_path": FIX}, wait_sec=5, poll=0.05), {})
-        self.assertLess(time.time() - t0, 1)
+        self.assertLess(time.time() - t0, 2)  # not the 5 s wait
         self.assertNotIn("Засыпаю. Включи снова командой voice-on.", self.spoken())
 
     def test_stop_hook_active_does_not_exit(self):
@@ -208,6 +208,16 @@ class HooksTest(unittest.TestCase):
         os.environ["VOICE_MODE_LISTENER"] = shlex.join([sys.executable, "-c", "import time; time.sleep(30)",
                                                         "listen.py"])
 
+    @staticmethod
+    def running(sid):
+        """The listener pid once its exec is visible to ps (right after Popen, ps still shows the parent)."""
+        for _ in range(60):
+            pid = hooks.state.listener_running(sid)
+            if pid:
+                return pid
+            time.sleep(0.05)
+        return None
+
     def kill_listener(self, sid):
         pid = hooks.state.listener_pid(sid)
         if pid:
@@ -224,8 +234,7 @@ class HooksTest(unittest.TestCase):
         append_utterance("s", time.time() - 3, "Клод, привет")
         out = on_stop({"session_id": "s", "last_assistant_message": ""}, wait_sec=2, poll=0.05)
         self.assertEqual(out["decision"], "block")
-        pid = hooks.state.listener_running("s")
-        self.assertTrue(pid)
+        self.assertTrue(self.running("s"))
         on_stop({"session_id": "s", "last_assistant_message": ""}, wait_sec=0.1, poll=0.05)
         self.assertFalse(is_on("s"))  # timed out and slept; a live listener was not replaced meanwhile
         self.assertEqual(self.spoken(), ["Засыпаю. Включи снова командой voice-on."])
@@ -234,7 +243,7 @@ class HooksTest(unittest.TestCase):
         self.fake_listener()
         on_voice_on("s")
         self.addCleanup(self.kill_listener, "s")
-        first = hooks.state.listener_running("s")
+        first = self.running("s")
         self.assertTrue(first)
         self.later(lambda: os.kill(first, 9), 0.1)
         pids = []
@@ -274,13 +283,13 @@ class HooksTest(unittest.TestCase):
         turn_on("s")
         self.addCleanup(self.kill_listener, "s")
         self.assertIn("<speak>", ctx(on_session_start({"session_id": "s"})))
-        self.assertTrue(hooks.state.listener_running("s"))
+        self.assertTrue(self.running("s"))
         self.assertEqual(self.spoken(), [])
 
     def test_session_end(self):
         self.fake_listener()
         on_voice_on("s")
-        pid = hooks.state.listener_running("s")
+        pid = self.running("s")
         self.assertTrue(pid)
         append_utterance("s", time.time(), "что-то в комнате")
         self.assertEqual(main("session_end", json.dumps({"session_id": "s", "reason": "prompt_input_exit"})), "")
